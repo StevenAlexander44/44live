@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta property="og:site_name" content="44live">
+	<title>{{ data.event_name }}{{ " ("+data.event_title+")" if data.event_title }}</title>
+	{%- if data.event_text %}
+		{%- if data.event_text.append is defined %}
+			{%- for i in data.event_text %}
+				{%- if i.text_type_id == 1 %}
+	<meta name="description" content="{{ i.text }}">
+				{%- endif %}
+			{%- endfor %}
+		{%- elif data.event_text.text_type_id == 1 %}
+	<meta name="description" content="{{ data.event_text.text }}">
+		{%- endif %}
+	{%- endif %}
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<link rel="shortcut icon" href="../static/clock.ico">
+	<meta name="color-scheme" content="dark light">
+	<link rel="stylesheet" href="/static/picocss/css/pico.min.css">
+</head>
+<body>
+<main class="container">
+	<h2><a href="https://25live.collegenet.com/pro/louisville#!/home/event/{{ data.event_id }}/details">{{ data.event_name }}</a>{{ " ("+data.event_title+")" if data.event_title }}</h2>
+	<h4>
+	{%- if "Rsrv" in data.profile.profile_name %}
+		{%- if data.profile.reservation.append is defined %}
+	Start: {{ data.profile.reservation[0].event_start_dt }}<br>
+	Until: {{ data.profile.reservation[-1].event_end_dt }}
+		{%- else %}
+	Start: {{ data.profile.reservation.event_start_dt }}<br>
+	Until: {{ data.profile.reservation.event_end_dt }}
+		{%- endif %}
+	{%- else %}
+	{{ data.profile.profile_name }}
+	{%- endif %}
+	</h4>
+	{%- if data.profile.append is not defined %}
+	<h3>
+		{%- if data.profile.reservation.append is defined %}
+			{%- if data.profile.reservation[0].space_reservation.append is defined %}
+				{%- for space in data.profile.reservation[0].space_reservation %}
+		<a href="{{ space.space.space_id }}">{{ space.space.formal_name }}</a><br>
+				{%- endfor %}
+			{%- else %}
+		<a href="{{ data.profile.reservation[0].space_reservation.space_id }}">{{ data.profile.reservation[0].space_reservation.space.formal_name }}</a>
+			{%- endif %}
+		{%- else %}
+			{%- if data.profile.reservation.space_reservation.append is defined %}
+				{%- for space in data.profile.reservation.space_reservation %}
+		<a href="{{ space.space.space_id }}">{{ space.space.formal_name }}</a><br>
+				{%- endfor %}
+			{%- else %}
+		<a href="{{ data.profile.reservation.space_reservation.space_id }}">{{ data.profile.reservation.space_reservation.space.formal_name }}</a>
+			{%- endif %}
+		{%- endif %}
+	</h3>
+	{%- endif %}
+	{%- if data.event_text %}
+	<h3>Description</h3>
+		{%- if data.event_text.append is defined %}
+			{%- for i in data.event_text %}
+				{%- if i.text_type_id == 1 %}
+	<h4>{{ i.text | safe }}</h4>
+				{%- endif %}
+			{%- endfor %}
+		{%- elif data.event_text.text_type_id == 1 %}
+	<h4>{{ data.event_text.text | safe }}</h4>
+		{%- endif %}
+	{%- endif %}
+	<h3>Contact(s)</h3>
+	{%- for i in data.role %}
+	<h4>{{ i.role_name }}: {{ i.contact.contact_first_name }} {{ i.contact.contact_middle_name }} {{ i.contact.contact_last_name }}</h4>
+	{%- if i.contact.email %}
+	<p>Email: {{ i.contact.email }}</p>
+	{%- endif %}
+	{%- if i.contact.phone %}
+	<p>Phone: {{ i.contact.phone }}</p>
+	{%- endif %}
+	{%- if i.contact.formatted_address %}
+	<p>Address: {{ i.contact.formatted_address }}</p>
+	{%- endif %}
+	{%- endfor %}
+	{%- if data.custom_attribute %}
+	<h3>Custom Attribute(s)</h3>
+		{%- if data.custom_attribute.append is defined %}
+			{%- for i in data.custom_attribute %}
+	<h4>{{ i.attribute_name }}</h4>
+	<p>{{ i.attribute_value }}</p>
+			{%- endfor %}
+		{%- else %}
+	<h4>{{ data.custom_attribute.attribute_name }}</h4>
+	<p>{{ data.custom_attribute.attribute_value }}</p>
+		{%- endif %}
+	{%- endif %}
+</main>
+<footer class=container>Last modified at {{ data.last_mod_dt }} by {{ data.last_mod_user }}</footer>
+</body>
+</html>

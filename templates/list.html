@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta property="og:site_name" content="44live">
+	<title>{{ day }} - 44live</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<link rel="shortcut icon" href="static/calendar.ico">
+	<link rel="stylesheet" href="/static/picocss/css/pico.min.css">
+	<base target="_blank">
+	<style>
+html,body{
+	font-family:monospace;
+	font-size:12px;
+	height:100%;
+	width:100%;
+	scrollbar-width:none;
+	overflow:auto;
+}
+table{
+	min-width:100%;
+	width:1600px;
+	max-width:400%;
+	border-collapse:separate;
+	border-spacing:0;
+	table-layout:fixed;
+	overflow-x:clip;
+}
+th,td{
+	padding:0;
+	background-color:white;
+	color:black;
+	box-sizing:border-box;
+	border-bottom:2px solid black;
+	border-right:2px solid black;
+}
+th,td:first-child{
+	position:sticky;
+}
+th:first-child,td:first-child{
+	left:0;
+}
+th{
+	text-align:center;
+	font-weight:bold;
+	top:0;
+}
+th:first-child{
+	z-index:1;
+}
+a,span{
+	color:black;
+	padding:1px;
+	display:block;
+	white-space:nowrap;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	text-decoration:none;
+}
+a:hover{background-color:lightgray;color:black;}
+.closed,[class="closed"]>*{background-color:black;color:white;}
+.available{background-color:lightgreen;}
+.other{background-color:white;}
+.class{background-color:darkgray;}
+.exam{background-color:gray;}
+.booked{background-color:coral;}
+.food{background-color:mediumpurple;}
+	</style>
+</head>
+<body>
+	<table>
+		<thead><tr>
+			<th colspan=60><a aria-busy="true" href="https://25live.collegenet.com/pro/louisville#!/home/event/form">Fetching</a></th>
+		</tr></thead>
+		<tbody></tbody>
+	</table>
+	<script>
+const headRow=document.querySelector("tr");
+const bookBtn=headRow.querySelector("a");
+const tbody=document.querySelector("tbody");
+
+for(let hour=8;hour<23;hour++){
+	const th=document.createElement("th");
+	th.setAttribute("colspan",60);
+	th.textContent=hour;
+	headRow.appendChild(th)
+}
+
+let json=localStorage.getItem("{{day}}");
+if(json)displayEvents(JSON.parse(json));
+
+fetch("{{day}}.json").then(response=>{
+	bookBtn.ariaBusy="false";
+	if(!response.ok){throw new Error(response.status)}
+	return response.json()
+}).then(json=>{
+	bookBtn.innerText="Book a Space";
+	tbody.innerHTML="";
+	displayEvents(json);
+	try{
+		localStorage.setItem("{{day}}",JSON.stringify(json))
+	}catch{
+		localStorage.clear();
+		localStorage.setItem("{{day}}",JSON.stringify(json))
+	}
+}).catch(error=>{
+	bookBtn.innerText="Fetch Failed";
+	console.error(error)
+})
+
+function createBox(row,length,name=null,link=null,type=null){
+	const td=document.createElement("td");
+	td.setAttribute("colspan",length);
+	let e;
+	if(link){
+		e=document.createElement("a");
+		e.href=link
+	}else if(name){
+		e=document.createElement("span")
+	}
+	if(name&&e){
+		e.textContent=name;
+		e.title=name;
+		td.appendChild(e)
+	}
+	if(type){
+		row.firstChild?.classList.add(type);
+		td.classList.add(type)
+	}
+	row.appendChild(td)
+}
+
+function displayEvents(json){
+	const filterClasses=new Set(window.location.search.substring(1).split(",").filter(Boolean));
+	for(const space in json){
+		const row=document.createElement("tr");
+		const info=json[space];
+		let link=`https://louisville.campusdish.com/LocationsAndMenus/Belknap/${space}`;
+		let defaultType="closed";
+		if(info.i){
+			link=info.i;
+			defaultType="available"
+		}
+		createBox(row,60,space,link);
+		let time=0;
+		if(Array.isArray(info.l)){
+			for(const event of info.l){
+				const {s:start,e:end,n:name,t:type="other",i:id}=event;
+				if(time<start){
+					createBox(row,start-time,null,null,defaultType);
+					time=start;
+				}
+				if(time<=start&&time<end){
+					const eventType=defaultType==="closed"?"food":(id===undefined?"closed":type);
+					const eventLink=id?`event/${id}`:null;
+					createBox(row,end-start,name,eventLink,eventType);
+					time=end;
+				}
+			}
+		}
+
+		if (time<900){
+			createBox(row,900-time,null,null,defaultType);
+		}
+
+		const firstCell=row.firstChild;
+		if(!firstCell)continue;
+
+		if(filterClasses.size>0){
+			if(firstCell.className.split(" ").some(cls=>filterClasses.has(cls))){
+				tbody.appendChild(row);
+			}
+		}else{
+			tbody.appendChild(row);
+		}
+	}
+}
+
+document.querySelector("script").remove();
+	</script>
+</body>
+</html>

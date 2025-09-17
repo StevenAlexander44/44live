@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta property="og:site_name" content="44live">
+	<title>{{ data.space_name }}{{ " ("+data.building_name+")" if data.building_name }}</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<link rel="shortcut icon" href="static/location.ico">
+	<meta name="color-scheme" content="dark light">
+	<link rel="stylesheet" href="/static/picocss/css/pico.min.css">
+</head>
+<body>
+<main class="container">
+	<h2><a href="https://25live.collegenet.com/pro/louisville#!/home/location/{{ data.space_id }}/availability/daily">{{ data.space_name }}</a>{{ " ("+data.building_name+")" if data.building_name }}</h2>
+	<h3>Hours</h3>
+	<h4>
+	{%- for i in data.hours %}
+	{{ i.day_name[:3] }}: {{ i.open }} - {{ i.close }}<br>
+	{%- endfor %}
+	</h4>
+	{% if data.instructions %}
+	<h3>Instructions</h3>
+	<h4>{{ data.instructions|safe }}</h4>
+	{% endif %}
+	{%- if data.comments %}
+	<h3>Comments</h3>
+	<h4>{{ data.comments|safe }}</h4>
+	{%- endif %}
+	<h3>Layout(s)</h3>
+	{%- if data.layout %}
+		{%- if data.layout.append is defined %}
+			{%- for i in data.layout %}
+				{%- if i.layout_photo_id %}
+	<h4>{{ i.layout_name }} ({{ i.layout_capacity }} capacity)</h4>
+	<img src="https://25live.collegenet.com/25live/data/louisville/run/image?image_id={{ i.layout_photo_id }}">
+				{%- endif %}
+			{%- endfor %}
+		{%- elif data.layout.layout_photo_id %}
+	<h4>{{ data.layout.layout_name }} ({{ data.layout.layout_capacity }} capacity)</h4>
+	<img src="https://25live.collegenet.com/25live/data/louisville/run/image?image_id={{ data.layout.layout_photo_id }}">
+		{%- endif %}
+	{%- endif %}
+</main>
+<footer class="container">Last modified at {{ data.last_mod_dt }} by {{ data.last_mod_user }}</footer>
+</body>
+</html>

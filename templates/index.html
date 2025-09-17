@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta property="og:site_name" content="44live">
+	<title>UofL Events</title>
+	<meta name="description" content="Find events at the University of Louisville">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<link rel="shortcut icon" href="static/calendar.ico">
+	<meta name="color-scheme" content="dark light">
+	<link rel="stylesheet" href="/static/picocss/css/pico.jade.min.css">
+</head>
+<body>
+<header class="container">
+	<h2>UofL Events</h2>
+</header>
+<main class="container">
+	<fieldset>
+		<legend><strong>Date to display</strong></legend>
+		<input id="today" type="radio" name="date" checked>
+		<label for="today">today</label><br>
+		<input id="tomorrow" type="radio" name="date">
+		<label for="tomorrow">tomorrow</label><br>
+		<input id="custom" type="radio" name="date">
+		<label for="custom"><input id="date" type="date" min="{{today}}" max="{{later}}" value="{{dayafter}}" onchange="noClear(event)"></label>
+	</fieldset>
+	<fieldset>
+		<legend><strong>Filter rooms by event type</strong></legend>
+		{%- for i in ["closed","available","class","exam","booked","food"] %}
+		<input id="{{i}}" type="checkbox">
+		<label for="{{i}}">{{i}}</label><br>
+		{%- endfor %}
+	</fieldset>
+	<fieldset>
+		<button onclick="doFilters()">Show the events!</button>
+	</fieldset>
+	<script>
+function noClear(e){
+	val=e.target.value
+	if(!val||val<"{{today}}"||val>"{{later}}"){e.target.value="{{dayafter}}"}
+	document.getElementById("custom").click()
+}
+function doFilters(){
+	d=document.querySelector('input[type="radio"]:checked').id;
+	if(d=="custom"){d=document.querySelector('input[type="date"]').value}
+	f=Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(c=>c.id);
+	f=f.length?"?"+f.join(","):"";
+	document.location.href=d+f
+}
+	</script>
+</main>
+</body>
+</html>
