@@ -2,7 +2,7 @@ from flask import Flask, request, redirect, render_template, send_from_directory
 from flask_caching import Cache
 from bs4 import BeautifulSoup
 import datetime as dt
-import requests
+import httpx
 import re
 
 app = Flask(__name__)
@@ -52,12 +52,12 @@ def index_event(event):
 @app.route('/<int:space>.json')
 @cache.cached(timeout=86400)
 def s(space):
-    return requests.post("https://25live.collegenet.com/25live/data/louisville/run/spaces.json?request_method=get",headers={"Content-Type":"application/json","Accept-Encoding":"gzip"},json={"mapxml":{"scope":"extended","space_id":space}}).json().get("spaces",[]).get("space",[])
+    return httpx.post("https://25live.collegenet.com/25live/data/louisville/run/spaces.json?request_method=get",headers={"Content-Type":"application/json","Accept-Encoding":"gzip"},json={"mapxml":{"scope":"extended","space_id":space}}).json().get("spaces",[]).get("space",[])
 
 @app.route('/event/<int:event>.json')
 @cache.cached(timeout=600)
 def e(event):
-    return requests.post("https://25live.collegenet.com/25live/data/louisville/run/events.json?request_method=get",headers={"Content-Type":"application/json","Accept-Encoding":"gzip"},json={"mapxml":{"scope":"extended","event_id":event}}).json().get("events",[]).get("event",[])
+    return httpx.post("https://25live.collegenet.com/25live/data/louisville/run/events.json?request_method=get",headers={"Content-Type":"application/json","Accept-Encoding":"gzip"},json={"mapxml":{"scope":"extended","event_id":event}}).json().get("events",[]).get("event",[])
 
 @app.route('/<int:y>-<int:m>-<int:d>.json')
 @cache.cached(timeout=300)
@@ -95,11 +95,11 @@ def all(y,m,d):
         spaces[restaurant] = {
             "l":sorted(schedule, key=lambda x:x["s"])
         }
-    data=requests.get(f"https://25live.collegenet.com/25live/data/louisville/run/home/calendar/calendardata.json?obj_cache_accl=0&page=1&compsubject=event&events_query_id=939025&start_dt={sday}&end_dt={sday}").json()
+    data=httpx.get(f"https://25live.collegenet.com/25live/data/louisville/run/home/calendar/calendardata.json?obj_cache_accl=0&page=1&compsubject=event&events_query_id=939025&start_dt={sday}&end_dt={sday}").json()
     food=set()
     for event in data["root"]["events"][0].get("rsrv", []):
         food.add(event["event_id"])
-    data=requests.get(f"https://25live.collegenet.com/25live/data/louisville/run/availability/availabilitydata.json?obj_cache_accl=0&comptype=availability&compsubject=location&page_size=400&spaces_query_id=667440&include=closed+blackouts+pending+related+empty+requests+draft&start_dt={sday}").json()
+    data=httpx.get(f"https://25live.collegenet.com/25live/data/louisville/run/availability/availabilitydata.json?obj_cache_accl=0&comptype=availability&compsubject=location&page_size=400&spaces_query_id=667440&include=closed+blackouts+pending+related+empty+requests+draft&start_dt={sday}").json()
     for space in data.get('subjects', []):
         spaces[space['itemName']] = {
             "i":space['itemId'],
@@ -126,9 +126,9 @@ def dining_data():
 
     base = "https://louisville.campusdish.com/LocationsAndMenus/Belknap/"
     locations = dict()
-    for location in re.findall(r':"/LocationsAndMenus/Belknap/([^",]+)', requests.get(base).text):
+    for location in re.findall(r':"/LocationsAndMenus/Belknap/([^",]+)', httpx.get(base).text):
         locations[location] = dict()
-        soup = BeautifulSoup(requests.get(base+location).text, 'html.parser')
+        soup = BeautifulSoup(httpx.get(base+location).text, 'html.parser')
 
         schedule_dates = []
         dates = soup.select_one(".location__scheduledates")
