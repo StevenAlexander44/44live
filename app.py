@@ -95,11 +95,11 @@ def all(y,m,d):
         spaces[restaurant] = {
             "l":sorted(schedule, key=lambda x:x["s"])
         }
-    data=httpx.get(f"https://25live.collegenet.com/25live/data/louisville/run/home/calendar/calendardata.json?obj_cache_accl=0&page=1&compsubject=event&events_query_id=939025&start_dt={sday}&end_dt={sday}").json()
+    data=httpx.get(f"https://25live.collegenet.com/25live/data/louisville/run/home/calendar/calendardata.json?obj_cache_accl=0&page=1&compsubject=event&events_query_id=939025&start_dt={sday}&end_dt={sday}",timeout=44).json()
     food=set()
     for event in data["root"]["events"][0].get("rsrv", []):
         food.add(event["event_id"])
-    data=httpx.get(f"https://25live.collegenet.com/25live/data/louisville/run/availability/availabilitydata.json?obj_cache_accl=0&comptype=availability&compsubject=location&page_size=400&spaces_query_id=667440&include=closed+blackouts+pending+related+empty+requests+draft&start_dt={sday}").json()
+    data=httpx.get(f"https://25live.collegenet.com/25live/data/louisville/run/availability/availabilitydata.json?obj_cache_accl=0&comptype=availability&compsubject=location&page_size=999&spaces_query_id=667440&include=closed+blackouts+pending+related+empty+requests+draft&start_dt={sday}",timeout=44).json()
     for space in data.get('subjects', []):
         spaces[space['itemName']] = {
             "i":space['itemId'],
@@ -117,7 +117,6 @@ def all(y,m,d):
         }
     return spaces
 
-# [{ periodId : '2230', name : 'Breakfast' }, { periodId : '3180', name : 'Light Lunch' }, { periodId : '2232', name : 'Lunch' }, { periodId : '2233', name : 'Dinner' }]
 @app.route('/dining.json')
 @cache.cached(timeout=44444)
 def dining_data():
