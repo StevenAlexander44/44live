@@ -64,7 +64,6 @@ a:hover{background-color:lightgray;color:black;}
 .class{background-color:darkgray;}
 .exam{background-color:gray;}
 .booked{background-color:coral;}
-.food{background-color:mediumpurple;}
 	</style>
 </head>
 <body>
@@ -135,8 +134,7 @@ function displayEvents(json){
 	for(const space in json){
 		const row=document.createElement("tr");
 		const info=json[space];
-		let link=`https://louisville.campusdish.com/LocationsAndMenus/Belknap/${space}`;
-		let defaultType="closed";
+		let link="";
 		if(info.i){
 			link=info.i;
 			defaultType="available"
@@ -151,8 +149,8 @@ function displayEvents(json){
 					time=start;
 				}
 				if(time<=start&&time<end){
-					const eventType=defaultType==="closed"?"food":(id===undefined?"closed":type);
-					const eventLink=id?`event/${id}`:null;
+					const eventType=id===undefined?"closed":type;
+					const eventLink=id?`https://25live.collegenet.com/pro/louisville#!/home/event/${id}/details`:null;
 					createBox(row,end-start,name,eventLink,eventType);
 					time=end;
 				}
